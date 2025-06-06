@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlmodel
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]
+python-dotenv
+pyjwt
+python-multipart
+alembic
+jinja2
