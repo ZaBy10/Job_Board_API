@@ -40,8 +40,8 @@ async def list_jobs(current_user: Annotated[Users, Depends(get_current_user)],
 
 
 @app_router.post("/apply", response_model=Application_Out)
-async def apply_to_job(  # Renamed from apply_job
-    application_data: Application_Create,  # Use renamed schema
+async def apply_to_job(  
+    application_data: Application_Create,  
     session: SessionDep,
     current_user: Annotated[Users, Depends(get_current_user)]
 ):

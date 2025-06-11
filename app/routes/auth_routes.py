@@ -16,8 +16,6 @@ auth_router = APIRouter(
     tags=['Authorization']
 )
 
-# routes/auth_routes.py
-from fastapi import Form  # Add this import
 
 @auth_router.post("/signup", response_model=dict)
 async def create_user(
