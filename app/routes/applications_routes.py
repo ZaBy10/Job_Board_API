@@ -138,3 +138,16 @@ async def search_jobs(
         query = query.where(Jobs.salary >= min_salary)
     
     return session.exec(query).all()
+
+@app_router.delete("/jobs/delete")
+async def deleteJob(session :SessionDep , current_user: Annotated[Users, Depends(get_current_user)],jobId : int):
+    check_recruiter(current_user)
+    job = session.exec(select(Jobs).where(Jobs.id==jobId)).first()
+    if not job:
+        raise HTTPException(status_code=404 , detail = "Job not found!!")
+    if job.recruiter_id!= current_user.id:# type: ignore
+        raise HTTPException(status_code=401, detail="You cannot delete job posted by other recruitors!!!")
+    session.delete(job)
+    session.commit()
+    
+    return {'message': "Succesfully deleted the job"}

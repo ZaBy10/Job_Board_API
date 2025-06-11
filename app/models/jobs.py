@@ -3,6 +3,8 @@ from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 from enum import Enum
 from models.applications import Status
+from sqlalchemy.orm import relationship
+
 if TYPE_CHECKING:
     from models.users import Users
     from models.applications import Applications
@@ -17,7 +19,11 @@ class Jobs(SQLModel, table=True):
     recruiter_id: int = Field(foreign_key="users.id")
     
     recruiter: "Users" = Relationship(back_populates="jobs")
-    applications: List["Applications"] = Relationship(back_populates="job")
+    applications: List["Applications"] = Relationship(back_populates="job",sa_relationship=relationship(
+            "Applications", 
+            cascade="all, delete-orphan",
+            passive_deletes=True
+        ))
 
 class Create_Job(SQLModel):
     title: str = Field(max_length=100)
@@ -25,7 +31,7 @@ class Create_Job(SQLModel):
     description: str
     salary: float
     location: str = Field(max_length=100)
-
+    
 class My_Jobs(SQLModel):
     application_id : int
     title : str
