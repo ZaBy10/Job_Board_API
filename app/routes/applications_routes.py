@@ -165,4 +165,4 @@ async def deleteApplications(session : SessionDep ,current_user: Annotated[Users
     session.delete(application)
     session.commit()
     
-    return {'message':'Successfully detleted the application'}
+    return {'message':'Successfully deleted the application'}
