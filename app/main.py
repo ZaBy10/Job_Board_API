@@ -1,17 +1,9 @@
-# Updated main.py
-from fastapi import FastAPI, Request, Depends
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, RedirectResponse
-from database import create_db_and_tables, SessionDep
+from fastapi import FastAPI
+from database import create_db_and_tables
 from routes.auth_routes import auth_router 
 from routes.applications_routes import app_router
 from routes.profile_routes import prof_router
-from models.users import Users
-from models.applications import Applications
-from models.jobs import Jobs
-from security.jwt_auth import get_current_user
-from sqlmodel import select
+
 
 app = FastAPI()
 
