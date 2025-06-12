@@ -84,6 +84,8 @@ async def apply_to_job(
 async def listmyjobs(current_user: Annotated[Users, Depends(get_current_user)] , session : SessionDep):
     check_job_seeker(current_user)
     my_application = session.exec(select(Applications).where(Applications.applicant_id==current_user.id).join(Jobs)).all()
+    if not my_application:
+        return {'message' : 'You have not applied to any jobs yet!!'}
     my_jobs = []
     for app in my_application:
         if app.status!=None and app.id!=None:
@@ -139,7 +141,7 @@ async def search_jobs(
     
     return session.exec(query).all()
 
-@app_router.delete("/jobs/delete")
+@app_router.delete("/jobs/delete" , response_model= dict)
 async def deleteJob(session :SessionDep , current_user: Annotated[Users, Depends(get_current_user)],jobId : int):
     check_recruiter(current_user)
     job = session.exec(select(Jobs).where(Jobs.id==jobId)).first()
@@ -151,3 +153,16 @@ async def deleteJob(session :SessionDep , current_user: Annotated[Users, Depends
     session.commit()
     
     return {'message': "Succesfully deleted the job"}
+
+@app_router.delete("/applications/delete" , response_model= dict)
+async def deleteApplications(session : SessionDep ,current_user: Annotated[Users, Depends(get_current_user)],AppId : int ):
+    check_job_seeker(current_user)
+    application = session.exec(select(Applications).where(Applications.id==AppId)).first()
+    if not application:
+        raise HTTPException(status_code=404 , detail="Application not found!!")
+    if application.applicant_id!=current_user.id:
+        raise HTTPException(status_code=401 , detail="Invalid Operation!! Cannot delete Other's Application")
+    session.delete(application)
+    session.commit()
+    
+    return {'message':'Successfully detleted the application'}
