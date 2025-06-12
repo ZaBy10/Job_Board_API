@@ -1,1 +1,1 @@
-# Job Board API Using FasTAPI
+# Job Board API Using FastAPI
