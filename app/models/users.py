@@ -25,3 +25,9 @@ class User_SignUp(SQLModel):
     email: str = Field(max_length=100)    
     password: str 
     role: Role
+    
+class User_Details(SQLModel):
+    id  : int 
+    username : str 
+    email : str
+    role : Role
