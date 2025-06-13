@@ -5,7 +5,7 @@ from security.jwt_auth import get_current_user
 from typing import Annotated
 from models.users import Users
 from security.roles import check_recruiter , check_job_seeker , check_valid_recruiter
-from sqlmodel import select
+from sqlmodel import select , func
 from models.applications import Application_Create, Application_Out , Applications , StatusUpdate,Status
 from fastapi import Query
 
@@ -133,7 +133,7 @@ async def search_jobs(
 ):
     query = select(Jobs)
     if title:
-        query = query.where(Jobs.title==title)
+        query = query.where(func.lower(Jobs.title).contains(func.lower(title)))
     if location:
         query = query.where(Jobs.location == location)
     if min_salary:
