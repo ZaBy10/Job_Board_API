@@ -4,7 +4,11 @@ from security.jwt_auth import get_current_user
 from models.users import Users , User_Details
 from typing import Annotated
 from sqlmodel import Field , select
+import secrets
+from security.password import get_password_hash
+from datetime import datetime , timedelta
 
+reset_tokens = {}  #For password Change
 
 
 prof_router = APIRouter(
@@ -44,4 +48,64 @@ async def profile_update(session : SessionDep , current_user : Annotated[Users,D
         session.commit()
         
     return {'message':'Successfully updated your Profile!!!'}
+
+
+@prof_router.post("/request-password-reset")
+async def request_password_reset(email: str, session: SessionDep):
+    """Step 1: Request reset token (no authentication required)"""
+    user = session.exec(select(Users).where(Users.email == email)).first()
+    if not user:
+        # Always return success to prevent email enumeration
+        return {"message": "If your email exists, you'll receive reset instructions"}
+    
+    # Generate secure token with expiration
+    token = secrets.token_urlsafe(32)
+    reset_tokens[token] = {
+        "user_id": user.id,
+        "expires": datetime.utcnow() + timedelta(minutes=30)
+    }
+    
+    print(f"\n🔑 Password reset token for {email}: {token}\n")
+    
+    return {"message": "Password reset instructions sent"}
+
+
         
+@prof_router.post("/reset-password")
+async def reset_password(
+    session: SessionDep, 
+    token: str, 
+    password: str
+):
+    """Step 2: Reset password using token (no authentication required)"""
+    token_data = reset_tokens.pop(token, None)
+    
+    # Validate token
+    if not token_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token"
+        )
+    
+    if datetime.utcnow() > token_data["expires"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token has expired"
+        )
+    
+    # Get user from token's user_id (not from current session)
+    user = session.get(Users, token_data["user_id"])
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    if len(password) < 8:
+        raise ValueError("Password must be at least 8 characters")
+    # Update password
+    user.password = get_password_hash(password)
+    session.add(user)
+    session.commit()
+    
+    return {"message": "Password updated successfully"}
+    
